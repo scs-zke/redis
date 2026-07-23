@@ -1,0 +1,269 @@
+---
+name: Build and Push Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release
+    tags:
+      - "v*"
+    paths:
+      - Dockerfile.8
+      - Dockerfile.8.sentinel
+      - Dockerfile.7
+      - Dockerfile.7.sentinel
+      - Dockerfile.exporter
+      - redis.conf
+      - entrypoint.sh
+      - setupMasterSlave.sh
+      - healthcheck.sh
+      - sentinel.conf
+      - entrypoint-sentinel.sh
+      - healthcheck-Sentinel.sh
+
+env:
+  # GitHub Container Registry
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  build-and-push-redis8:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout github.repository
+        uses: actions/checkout@v5
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for redis8
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis8
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set latest tag in case of a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis8:latest" >> $GITHUB_ENV
+
+      - name: Build and push Docker redis8 image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.8
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-and-push-redis8-sentinel:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout github.repository
+        uses: actions/checkout@v5
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for redis8-sentinel
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis8-sentinel
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set latest tag in case of a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis8-sentinel:latest" >> $GITHUB_ENV
+
+      - name: Build and push Docker redis8-sentinel image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.8.sentinel
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-and-push-redis7:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout github.repository
+        uses: actions/checkout@v5
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for redis7
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis7
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set latest tag in case of a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis7:latest" >> $GITHUB_ENV
+
+      - name: Build and push Docker redis7 image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.7
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-and-push-redis7-sentinel:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout github.repository
+        uses: actions/checkout@v5
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for redis7-sentinel
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis7-sentinel
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set latest tag in case of a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis7-sentinel:latest" >> $GITHUB_ENV
+
+      - name: Build and push Docker redis7-sentinel image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.7.sentinel
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  build-and-push-redis-exporter:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      security-events: write
+      pull-requests: write
+      packages: write
+
+    steps:
+      - name: Checkout github.repository
+        uses: actions/checkout@v5
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for redis-exporter
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis-exporter
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Set latest tag in case of a release
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "LATEST_TAG=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/redis-exporter:latest" >> $GITHUB_ENV
+
+      - name: Build and push Docker redis-exporter image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.exporter
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+            ${{ env.LATEST_TAG }}
+          labels: ${{ steps.meta.outputs.labels }}
