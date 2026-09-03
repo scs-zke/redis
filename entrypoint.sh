@@ -54,7 +54,11 @@ tls_setup() {
         {
             echo tls-cert-file "${REDIS_TLS_CERT}"
             echo tls-key-file "${REDIS_TLS_CERT_KEY}"
-            echo tls-ca-cert-file "${REDIS_TLS_CA_KEY}"
+            if [[ -z "${REDIS_TLS_CA_BUNDLE}" ]]; then
+                echo tls-ca-cert-file "${REDIS_TLS_CA_KEY}"
+            else
+                echo tls-ca-cert-file "${REDIS_TLS_CA_BUNDLE}"
+            fi
             # echo tls-prefer-server-ciphers yes
             echo tls-auth-clients optional
         } >> /etc/redis/redis.conf
@@ -68,7 +72,7 @@ tls_setup() {
                 echo tls-cluster yes
             } >> /etc/redis/redis.conf
 
-            if [[ "${REDIS_MAJOR_VERSION}" == "v7" ]]; then
+            if [[ "${REDIS_MAJOR_VERSION}" == "v7" || "${REDIS_MAJOR_VERSION}" == "v8" ]]; then
                 {
                     echo cluster-preferred-endpoint-type hostname
                 } >> /etc/redis/redis.conf
@@ -143,7 +147,7 @@ start_redis() {
             CLUSTER_ANNOUNCE_IP="${POD_IP}"
         fi
         
-        if [[ "${REDIS_MAJOR_VERSION}" != "v7" ]]; then
+        if [[ "${REDIS_MAJOR_VERSION}" != "v7" && "${REDIS_MAJOR_VERSION}" != "v8" ]]; then
           exec redis-server /etc/redis/redis.conf \
           --cluster-announce-ip "${CLUSTER_ANNOUNCE_IP}"
         else
